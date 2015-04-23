@@ -11,7 +11,9 @@ import matplotlib.pyplot as plt
 
 ITER_NUM = 100
 LEARN_RATE = 0.3
-NUM_DATA = 10
+NUM_DATA = 50
+NUM_AIM = 10
+HIDDEN_LAYER = 15
 
 class MyANN:
     def __init__(self, input, hidden, output):
@@ -66,7 +68,7 @@ def BackPropagation(net, data, label, LEARN_RATE, ITER_NUM):
             
             net.bias1 += LEARN_RATE * np.mat(hiddenErr)
             net.bias2 += LEARN_RATE * np.mat(outputErr)
-        tag.append(realError/len(data))
+        tag.append(realError / len(data))
         '''    
         error = 0
         for i in range(len(data)):
@@ -78,6 +80,9 @@ def BackPropagation(net, data, label, LEARN_RATE, ITER_NUM):
 def f(x, y):
     return math.e ** x / (y ** 2 + 1)
 
+def fPro(x1, x2, x3, x4, x5):
+    return  x2 * (math.sin(x1 * x3)) - x4 * 14 * math.log(x5 ** 2 + 1)
+
 def loadData():
     import random
     data, label = [], []
@@ -85,6 +90,15 @@ def loadData():
         x, y = random.uniform(-10, 10), random.uniform(-10, 10)
         data.append((x, y))
         label.append([f(x, y)])
+    return np.mat(data), np.mat(label)
+
+def loadDataPro():
+    import random
+    data, label = [], []
+    for i in range(NUM_DATA):
+        x1, x2, x3, x4, x5 = random.uniform(-10, 10), random.uniform(-10, 10), random.uniform(-10, 10), random.uniform(-10, 10), random.uniform(-10, 10)
+        data.append([x1, x2, x3, x4, x5])
+        label.append([fPro(x1, x2, x3, x4, x5)])
     return np.mat(data), np.mat(label)
 
 def autoNorm(dataSet):
@@ -96,7 +110,7 @@ def autoNorm(dataSet):
     normDataSet = dataSet - np.tile(minVals, (m, 1))
     normDataSet = normDataSet / np.tile(maxVals, (m, 1))
     return normDataSet, ranges, minVals
-
+'''
 if __name__ == '__main__':
     # for test
     net = MyANN(2, 4, 1)
@@ -112,4 +126,20 @@ if __name__ == '__main__':
     ax.plot(x, y)
     fig.savefig('test.pdf')
     print 'finish drawing'
-    
+'''
+if __name__ == '__main__':
+    data, aimlabel = loadDataPro()
+    normData, rangesData, minValsData = autoNorm(data)
+    normLabel, rangesLabel, minValsLabel = autoNorm(aimlabel)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x = np.arange(ITER_NUM)
+    for i in range(NUM_AIM):      
+        net = MyANN(5, HIDDEN_LAYER, 1)
+        y = BackPropagation(net, data, aimlabel, LEARN_RATE, ITER_NUM)
+        print 'finish ' + str(i + 1) + ' training'
+        ax.plot(x, y, label=str(i + 1))
+    ax.legend(loc='best')
+    ax.set_title('Influence of Local Optimum')
+    fig.savefig('influenceOfLocalOptimum.pdf')
+    print 'end'
